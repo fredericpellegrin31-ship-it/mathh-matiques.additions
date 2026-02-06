@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Additionneur Galactique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0b0e14;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: white;
+            z-index: 10;
+        }
+        .hud-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            pointer-events: auto;
+            width: 90%;
+            max-width: 450px;
+            min-width: 280px;
+        }
+        #target-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4ade80;
+            text-shadow: 0 0 15px rgba(74, 222, 128, 0.6);
+            line-height: 1.2;
+            text-align: center;
+        }
+        .btn {
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        #timer-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 10px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background: #4ade80;
+            transition: width 1s linear;
+        }
+        select {
+            pointer-events: auto;
+            background-color: #1f2937;
+            color: white;
+            border: 1px solid #4ade80;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            outline: none;
+        }
+        .home-btn {
+            pointer-events: auto;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: rgba(31, 41, 55, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            z-index: 50;
+            transition: background-color 0.2s;
+        }
+        .home-btn:hover {
+            background-color: rgba(55, 65, 81, 1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        
+        <button id="home-btn" class="home-btn" title="Retour à l'accueil">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+        </button>
+
+        <div class="hud-container">
+            <div class="hud-panel flex flex-col items-center shadow-lg border border-gray-700">
+                <div class="text-xs uppercase tracking-widest text-gray-400">Calcule le résultat de :</div>
+                <div id="target-display">0 + 0</div>
+                <div class="flex justify-between w-full mt-2 px-4">
+                    <div class="text-sm">Score: <span id="score-val" class="font-bold text-green-400">0</span></div>
+                    <div class="text-sm">Vies: <span id="lives-val" class="font-bold text-red-400">3</span></div>
+                </div>
+                <div id="timer-bar-container">
+                    <div id="timer-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="overlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 pointer-events-auto z-40">
+            <div class="text-center p-6 md:p-8 bg-gray-900 border-2 border-green-500 rounded-2xl max-w-md w-11/12 mx-auto shadow-2xl overflow-y-auto max-h-screen">
+                <h1 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400 mb-2 filter drop-shadow-md">Additionneur Galactique</h1>
+                <h2 id="overlay-title" class="text-xl md:text-2xl font-bold text-green-500 mb-6">PRÊT À DÉCOLLER ?</h2>
+                
+                <div class="mb-6 text-left">
+                    <label class="text-gray-400 text-sm uppercase tracking-wide mb-2 block font-semibold">Choisis ta difficulté :</label>
+                    <select id="difficulty-select" class="shadow-inner cursor-pointer">
+                        <option value="EASY">Niveau 1 : Sommes jusqu'à 20</option>
+                        <option value="MEDIUM" selected>Niveau 2 : Sommes jusqu'à 50</option>
+                        <option value="HARD">Niveau 3 : Sommes jusqu'à 100</option>
+                    </select>
+                </div>
+
+                <div id="overlay-msg" class="text-gray-300 mb-8 bg-gray-800 p-4 rounded-lg text-sm leading-relaxed text-left md:text-center">
+                    <p class="mb-2">Regarde l'addition en haut de l'écran et détruis l'astéroïde qui contient le <b>bon résultat</b>.</p>
+                    <p class="text-yellow-400 font-bold mb-2">Contrôles :</p>
+                    <p>⬅️ ➡️ ⬆️ ⬇️ : Déplacement</p>
+                    <p>ESPACE : Tirer</p>
+                    <span class="text-green-400 block mt-4">Objectif : Score maximum en 3 minutes.</span>
+                </div>
+                <button id="start-btn" class="btn bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-full font-bold text-lg md:text-xl uppercase shadow-lg w-full transform transition hover:-translate-y-1">Lancer la mission</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let droneNodes = [];
+
+        function startSpaceAmbience() {
+            stopSpaceAmbience();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const freqs = [55, 110, 165];
+            freqs.forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const panner = audioCtx.createStereoPanner();
+                osc.type = i === 0 ? 'triangle' : 'sine';
+                osc.frequency.value = f + (Math.random() * 2 - 1); 
+                gain.gain.value = 0.05 - (i * 0.01); 
+                panner.pan.value = (i - 1) * 0.5;
+                osc.connect(gain);
+                gain.connect(panner);
+                panner.connect(audioCtx.destination);
+                osc.start();
+                droneNodes.push({ osc, gain });
+            });
+        }
+
+        function stopSpaceAmbience() {
+            droneNodes.forEach(n => {
+                try { n.osc.stop(); n.osc.disconnect(); } catch(e) {}
+            });
+            droneNodes = [];
+        }
+        
+        function playLaserSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playExplosionSound(isCorrect) {
+            const noise = audioCtx.createBufferSource();
+            const bufferSize = audioCtx.sampleRate * 0.3;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            noise.buffer = buffer;
+            const gain = audioCtx.createGain();
+            const startVol = isCorrect ? 0.2 : 0.15;
+            gain.gain.setValueAtTime(startVol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = isCorrect ? 1200 : 400;
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        const ASSETS = {
+            ship: 'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/playerShip1_blue.png',
+            laser: 'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Lasers/laserBlue13.png',
+            meteors: [
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big1.png',
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big2.png',
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big3.png',
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big4.png'
+            ]
+        };
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const targetDisplayEl = document.getElementById('target-display');
+        const scoreEl = document.getElementById('score-val');
+        const livesEl = document.getElementById('lives-val');
+        const timerBar = document.getElementById('timer-bar');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMsg = document.getElementById('overlay-msg');
+        const startBtn = document.getElementById('start-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const difficultySelect = document.getElementById('difficulty-select');
+
+        const DIFFICULTY_SETTINGS = {
+            'EASY': { max: 20, speedMod: 0.8, interval: 2200 },
+            'MEDIUM': { max: 50, speedMod: 1.0, interval: 1800 },
+            'HARD': { max: 100, speedMod: 1.3, interval: 1500 }
+        };
+
+        let currentDifficulty = 'MEDIUM';
+        let gameState = 'START'; 
+        let score = 0;
+        let lives = 3;
+        let targetValue = 0; 
+        let currentOperationText = ""; 
+        let timeLeft = 180;
+        let lastTime = 0;
+        let meteorTimer = 0;
+        let meteorInterval = 1800; 
+
+        const player = {
+            x: 0, y: 0, w: 60, h: 50, speed: 7,
+            img: new Image()
+        };
+        player.img.src = ASSETS.ship;
+
+        const lasers = [];
+        const laserImg = new Image();
+        laserImg.src = ASSETS.laser;
+
+        const meteors = [];
+        const meteorImages = ASSETS.meteors.map(src => {
+            const img = new Image();
+            img.src = src;
+            return img;
+        });
+
+        const particles = [];
+        const floatingTexts = [];
+
+        const keys = {};
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (e.code === 'Space' && gameState === 'PLAYING') {
+                fireLaser();
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        function init() {
+            resize();
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 100;
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if(player.x > canvas.width) player.x = canvas.width - player.w;
+            if(player.y > canvas.height) player.y = canvas.height - player.h;
+        }
+        window.addEventListener('resize', resize);
+
+        function generateNewTarget() {
+            const max = DIFFICULTY_SETTINGS[currentDifficulty].max;
+            const val1 = Math.floor(Math.random() * (max - 2)) + 1;
+            const val2 = Math.floor(Math.random() * (max - val1)) + 1;
+            
+            targetValue = val1 + val2;
+            currentOperationText = `${val1} + ${val2}`;
+            targetDisplayEl.textContent = currentOperationText;
+        }
+
+        function spawnMeteor() {
+            const size = 80 + Math.random() * 40;
+            let val;
+            
+            if (Math.random() > 0.6) {
+                val = targetValue;
+            } else {
+                const max = DIFFICULTY_SETTINGS[currentDifficulty].max;
+                const offset = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 5) + 1);
+                val = Math.max(1, targetValue + offset);
+                if(val === targetValue) val += 1;
+            }
+
+            const settings = DIFFICULTY_SETTINGS[currentDifficulty];
+            const baseSpeed = 1.5 + Math.random() * 2;
+
+            meteors.push({
+                x: Math.random() * (canvas.width - size),
+                y: -size,
+                w: size,
+                h: size,
+                speed: baseSpeed * settings.speedMod,
+                rotation: 0,
+                rotSpeed: (Math.random() - 0.5) * 0.05,
+                img: meteorImages[Math.floor(Math.random() * meteorImages.length)],
+                label: `${val}`,
+                value: val
+            });
+        }
+
+        function fireLaser() {
+            lasers.push({ x: player.x, y: player.y - 20, w: 9, h: 33, speed: 12 });
+            playLaserSound();
+        }
+
+        function addFloatingText(x, y, text, color) {
+            floatingTexts.push({ x, y, text, color, life: 1.0 });
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    life: 1,
+                    color: color
+                });
+            }
+        }
+
+        function update(deltaTime) {
+            if (gameState !== 'PLAYING') return;
+
+            timeLeft -= deltaTime / 1000;
+            if (timeLeft <= 0) { timeLeft = 0; endGame("TEMPS ÉCOULÉ !"); }
+            
+            timerBar.style.width = `${(timeLeft / 180) * 100}%`;
+
+            if ((keys['ArrowLeft'] || keys['KeyA']) && player.x > player.w/2) player.x -= player.speed;
+            if ((keys['ArrowRight'] || keys['KeyD']) && player.x < canvas.width - player.w/2) player.x += player.speed;
+            if ((keys['ArrowUp'] || keys['KeyW']) && player.y > player.h/2) player.y -= player.speed;
+            if ((keys['ArrowDown'] || keys['KeyS']) && player.y < canvas.height - player.h/2) player.y += player.speed;
+            
+            for (let i = lasers.length - 1; i >= 0; i--) {
+                lasers[i].y -= lasers[i].speed;
+                if (lasers[i].y < -50) lasers.splice(i, 1);
+            }
+
+            meteorTimer += deltaTime;
+            if (meteorTimer > meteorInterval) {
+                spawnMeteor();
+                meteorTimer = 0;
+            }
+
+            for (let i = meteors.length - 1; i >= 0; i--) {
+                const m = meteors[i];
+                m.y += m.speed;
+                m.rotation += m.rotSpeed;
+
+                if (m.y > canvas.height + m.h) {
+                    meteors.splice(i, 1);
+                    continue;
+                }
+
+                const dist = Math.hypot(m.x + m.w/2 - player.x, m.y + m.h/2 - player.y);
+                if (dist < (m.w + player.w) / 2.5) {
+                    createExplosion(player.x, player.y, '#ff4444');
+                    playExplosionSound(false);
+                    lives--;
+                    livesEl.textContent = lives;
+                    addFloatingText(player.x, player.y - 20, "AÏE !", "#ff4444");
+                    meteors.splice(i, 1);
+                    if (lives <= 0) endGame("MISSION ÉCHOUÉE");
+                    continue;
+                }
+
+                for (let j = lasers.length - 1; j >= 0; j--) {
+                    const l = lasers[j];
+                    if (l.x > m.x && l.x < m.x + m.w && l.y > m.y && l.y < m.y + m.h) {
+                        const isCorrect = (m.value === targetValue);
+                        createExplosion(m.x + m.w/2, m.y + m.h/2, isCorrect ? '#4ade80' : '#8b5a2b');
+                        playExplosionSound(isCorrect);
+                        
+                        if (isCorrect) {
+                            score += 10;
+                            addFloatingText(m.x + m.w/2, m.y, "BRAVO !", "#4ade80");
+                            generateNewTarget();
+                        } else {
+                            score = Math.max(0, score - 5);
+                            addFloatingText(m.x + m.w/2, m.y, "MAUVAIS !", "#ff4444");
+                        }
+                        
+                        scoreEl.textContent = score;
+                        meteors.splice(i, 1);
+                        lasers.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.life -= 0.03;
+                if (p.life <= 0) particles.splice(i, 1);
+            });
+            floatingTexts.forEach((t, i) => {
+                t.y -= 1; t.life -= 0.02;
+                if (t.life <= 0) floatingTexts.splice(i, 1);
+            });
+        }
+
+        // Helper function for safe image drawing
+        function safeDrawImage(image, x, y, w, h, isCentered = false) {
+            if (image.complete && image.naturalWidth !== 0) {
+                if (isCentered) {
+                    ctx.drawImage(image, x - w/2, y - h/2, w, h);
+                } else {
+                    ctx.drawImage(image, x, y, w, h);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Étoiles de fond
+            ctx.fillStyle = "white";
+            for(let i=0; i<60; i++) {
+                const x = ((Math.cos(i) * 10000) % canvas.width);
+                const y = ((i * 50 + lastTime * 0.05) % canvas.height);
+                ctx.globalAlpha = 0.5;
+                ctx.fillRect(x, y, 2, 2);
+            }
+            ctx.globalAlpha = 1;
+
+            // Lasers
+            lasers.forEach(l => {
+                if (!safeDrawImage(laserImg, l.x, l.y, l.w, l.h, true)) {
+                    ctx.fillStyle = "#4ade80";
+                    ctx.fillRect(l.x - l.w/2, l.y - l.h/2, l.w, l.h);
+                }
+            });
+
+            // Joueur
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            if (!safeDrawImage(player.img, 0, 0, player.w, player.h, true)) {
+                // Fallback Triangle if image fails
+                ctx.fillStyle = "#3b82f6";
+                ctx.beginPath();
+                ctx.moveTo(0, -player.h/2);
+                ctx.lineTo(player.w/2, player.h/2);
+                ctx.lineTo(-player.w/2, player.h/2);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // Astéroïdes
+            meteors.forEach(m => {
+                ctx.save();
+                ctx.translate(m.x + m.w/2, m.y + m.h/2);
+                ctx.rotate(m.rotation);
+                if (!safeDrawImage(m.img, 0, 0, m.w, m.h, true)) {
+                    // Fallback Circle if image fails
+                    ctx.fillStyle = "#4b5563";
+                    ctx.beginPath();
+                    ctx.arc(0, 0, m.w/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+                
+                ctx.fillStyle = "white";
+                ctx.font = "bold 28px Arial";
+                ctx.textAlign = "center";
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 4;
+                ctx.strokeText(m.label, m.x + m.w/2, m.y + m.h/2 + 10);
+                ctx.fillText(m.label, m.x + m.w/2, m.y + m.h/2 + 10);
+            });
+
+            // Particules
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
+            });
+
+            // Textes flottants
+            ctx.globalAlpha = 1;
+            floatingTexts.forEach(t => {
+                ctx.globalAlpha = t.life;
+                ctx.fillStyle = t.color;
+                ctx.font = "bold 24px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(t.text, t.x, t.y);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - (lastTime || timestamp);
+            lastTime = timestamp;
+            update(deltaTime);
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            startSpaceAmbience(); 
+            currentDifficulty = difficultySelect.value;
+            const settings = DIFFICULTY_SETTINGS[currentDifficulty];
+            meteorInterval = settings.interval;
+            score = 0; lives = 3; timeLeft = 180;
+            scoreEl.textContent = score;
+            livesEl.textContent = lives;
+            meteors.length = 0; lasers.length = 0;
+            particles.length = 0; floatingTexts.length = 0;
+            gameState = 'PLAYING';
+            overlay.classList.add('hidden');
+            generateNewTarget();
+        }
+
+        function endGame(reason) {
+            gameState = 'GAMEOVER';
+            stopSpaceAmbience();
+            overlayTitle.textContent = reason;
+            overlayMsg.innerHTML = `<div class="bg-gray-800 p-4 rounded-lg mb-4">
+                <p class="text-xl">MISSION TERMINÉE !</p>
+                <p class="text-3xl font-bold text-green-400 mt-2">Score Final : ${score}</p>
+            </div>
+            <p class="text-sm">Conseil : Entraîne-toi régulièrement pour devenir un as du calcul !</p>`;
+            startBtn.textContent = "REESSAYER";
+            overlay.classList.remove('hidden');
+        }
+        
+        homeBtn.addEventListener('click', () => {
+            gameState = 'START';
+            stopSpaceAmbience();
+            overlayTitle.textContent = "PAUSE";
+            overlayMsg.innerHTML = `<p>Partie interrompue.</p><p class="text-2xl font-bold">Score actuel : ${score}</p>`;
+            startBtn.textContent = "REPRENDRE / REJOUER";
+            overlay.classList.remove('hidden');
+        });
+
+        startBtn.addEventListener('click', startGame);
+        init();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
