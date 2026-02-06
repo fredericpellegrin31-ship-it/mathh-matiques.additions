@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Multiplicateur Galactique</title>
+    <title>Additionneur Galactique</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -11,7 +11,6 @@
             overflow: hidden;
             background-color: #0b0e14;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; 
         }
         canvas {
             display: block;
@@ -39,15 +38,16 @@
             border-bottom-right-radius: 20px;
             pointer-events: auto;
             width: 90%;
-            max-width: 400px;
+            max-width: 450px;
             min-width: 280px;
         }
-        #target-number {
-            font-size: 3rem;
+        #target-display {
+            font-size: 2.5rem;
             font-weight: bold;
-            color: #ffde59;
-            text-shadow: 0 0 15px rgba(255, 222, 89, 0.6);
-            line-height: 1;
+            color: #4ade80;
+            text-shadow: 0 0 15px rgba(74, 222, 128, 0.6);
+            line-height: 1.2;
+            text-align: center;
         }
         .btn {
             pointer-events: auto;
@@ -75,7 +75,7 @@
             pointer-events: auto;
             background-color: #1f2937;
             color: white;
-            border: 1px solid #eab308;
+            border: 1px solid #4ade80;
             padding: 0.5rem;
             border-radius: 0.5rem;
             width: 100%;
@@ -114,8 +114,8 @@
 
         <div class="hud-container">
             <div class="hud-panel flex flex-col items-center shadow-lg border border-gray-700">
-                <div class="text-xs uppercase tracking-widest text-gray-400">Trouve le produit pour :</div>
-                <div id="target-number">0</div>
+                <div class="text-xs uppercase tracking-widest text-gray-400">Calcule le résultat de :</div>
+                <div id="target-display">0 + 0</div>
                 <div class="flex justify-between w-full mt-2 px-4">
                     <div class="text-sm">Score: <span id="score-val" class="font-bold text-green-400">0</span></div>
                     <div class="text-sm">Vies: <span id="lives-val" class="font-bold text-red-400">3</span></div>
@@ -126,26 +126,28 @@
             </div>
         </div>
 
-        <div id="overlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 pointer-events-auto hidden z-40">
-            <div class="text-center p-6 md:p-8 bg-gray-900 border-2 border-yellow-500 rounded-2xl max-w-md w-11/12 mx-auto shadow-2xl overflow-y-auto max-h-screen">
-                <h1 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-yellow-400 mb-2 filter drop-shadow-md">Multiplicateur Galactique</h1>
-                <h2 id="overlay-title" class="text-xl md:text-2xl font-bold text-yellow-500 mb-6">PRÊT À DÉCOLLER ?</h2>
+        <div id="overlay" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 pointer-events-auto z-40">
+            <div class="text-center p-6 md:p-8 bg-gray-900 border-2 border-green-500 rounded-2xl max-w-md w-11/12 mx-auto shadow-2xl overflow-y-auto max-h-screen">
+                <h1 class="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400 mb-2 filter drop-shadow-md">Additionneur Galactique</h1>
+                <h2 id="overlay-title" class="text-xl md:text-2xl font-bold text-green-500 mb-6">PRÊT À DÉCOLLER ?</h2>
                 
                 <div class="mb-6 text-left">
                     <label class="text-gray-400 text-sm uppercase tracking-wide mb-2 block font-semibold">Choisis ta difficulté :</label>
                     <select id="difficulty-select" class="shadow-inner cursor-pointer">
-                        <option value="CE1">Niveau 1 : Tables 1, 2, 5, 10</option>
-                        <option value="CE2" selected>Niveau 2 : Tables 2 à 9</option>
-                        <option value="CM1">Niveau 3 : Tables 2 à 10</option>
-                        <option value="CM2">Niveau 4 : Tables 2 à 12</option>
+                        <option value="EASY">Niveau 1 : Sommes jusqu'à 20</option>
+                        <option value="MEDIUM" selected>Niveau 2 : Sommes jusqu'à 50</option>
+                        <option value="HARD">Niveau 3 : Sommes jusqu'à 100</option>
                     </select>
                 </div>
 
-                <p id="overlay-msg" class="text-gray-300 mb-8 bg-gray-800 p-4 rounded-lg text-sm leading-relaxed text-left md:text-center">
-                    Pilote ton vaisseau et détruis les astéroïdes qui contiennent la <b>bonne multiplication</b>.<br>
-                    <span class="text-yellow-400 block mt-2">Objectif : Score maximum en 3 minutes.</span>
-                </p>
-                <button id="start-btn" class="btn bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-8 py-4 rounded-full font-bold text-lg md:text-xl uppercase shadow-lg w-full transform transition hover:-translate-y-1">Lancer la mission</button>
+                <div id="overlay-msg" class="text-gray-300 mb-8 bg-gray-800 p-4 rounded-lg text-sm leading-relaxed text-left md:text-center">
+                    <p class="mb-2">Regarde l'addition en haut de l'écran et détruis l'astéroïde qui contient le <b>bon résultat</b>.</p>
+                    <p class="text-yellow-400 font-bold mb-2">Contrôles :</p>
+                    <p>⬅️ ➡️ ⬆️ ⬇️ : Déplacement</p>
+                    <p>ESPACE : Tirer</p>
+                    <span class="text-green-400 block mt-4">Objectif : Score maximum en 3 minutes.</span>
+                </div>
+                <button id="start-btn" class="btn bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-8 py-4 rounded-full font-bold text-lg md:text-xl uppercase shadow-lg w-full transform transition hover:-translate-y-1">Lancer la mission</button>
             </div>
         </div>
     </div>
@@ -158,6 +160,7 @@
 
         function startSpaceAmbience() {
             stopSpaceAmbience();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const freqs = [55, 110, 165];
             freqs.forEach((f, i) => {
                 const osc = audioCtx.createOscillator();
@@ -216,21 +219,20 @@
             noise.start();
         }
 
-        // --- Utilisation des fichiers images fournis ---
         const ASSETS = {
-            ship: 'playerShip1_red.png',
-            laser: 'laserRed13.png',
+            ship: 'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/playerShip1_blue.png',
+            laser: 'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Lasers/laserBlue13.png',
             meteors: [
-                'meteorBrown_big1.png',
-                'meteorBrown_big2.png',
-                'meteorBrown_big3.png',
-                'meteorBrown_big4.png'
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big1.png',
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big2.png',
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big3.png',
+                'https://raw.githubusercontent.com/kenney-assets/space-shooter-redux/master/PNG/Meteors/meteorGrey_big4.png'
             ]
         };
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const targetEl = document.getElementById('target-number');
+        const targetDisplayEl = document.getElementById('target-display');
         const scoreEl = document.getElementById('score-val');
         const livesEl = document.getElementById('lives-val');
         const timerBar = document.getElementById('timer-bar');
@@ -242,63 +244,58 @@
         const difficultySelect = document.getElementById('difficulty-select');
 
         const DIFFICULTY_SETTINGS = {
-            'CE1': { speedMod: 0.8, interval: 2200 },
-            'CE2': { speedMod: 1.0, interval: 1800 },
-            'CM1': { speedMod: 1.2, interval: 1600 },
-            'CM2': { speedMod: 1.4, interval: 1400 }
+            'EASY': { max: 20, speedMod: 0.8, interval: 2200 },
+            'MEDIUM': { max: 50, speedMod: 1.0, interval: 1800 },
+            'HARD': { max: 100, speedMod: 1.3, interval: 1500 }
         };
 
-        let currentDifficulty = 'CE2';
+        let currentDifficulty = 'MEDIUM';
         let gameState = 'START'; 
         let score = 0;
         let lives = 3;
-        let targetValue = 0;
+        let targetValue = 0; 
+        let currentOperationText = ""; 
         let timeLeft = 180;
         let lastTime = 0;
         let meteorTimer = 0;
         let meteorInterval = 1800; 
 
-        // Initialisation du joueur
-        const player = {
-            x: 0, y: 0, w: 60, h: 50, speed: 6,
-            img: new Image(), targetX: 0, targetY: 0, isMovingToTouch: false
-        };
-        player.img.src = ASSETS.ship;
+        // Initialisation des images
+        const playerImg = new Image();
+        playerImg.src = ASSETS.ship;
 
-        const lasers = [];
         const laserImg = new Image();
         laserImg.src = ASSETS.laser;
 
-        const meteors = [];
         const meteorImages = ASSETS.meteors.map(src => {
             const img = new Image();
             img.src = src;
             return img;
         });
 
+        const player = {
+            x: 0, y: 0, w: 60, h: 50, speed: 7
+        };
+
+        const lasers = [];
+        const meteors = [];
         const particles = [];
         const floatingTexts = [];
 
         const keys = {};
-        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (e.code === 'Space' && gameState === 'PLAYING') {
+                fireLaser();
+                e.preventDefault();
+            }
+        });
         window.addEventListener('keyup', e => keys[e.code] = false);
-
-        canvas.addEventListener('pointerdown', handlePointer);
-        canvas.addEventListener('pointermove', handlePointer);
-        function handlePointer(e) {
-            if (gameState !== 'PLAYING') return;
-            player.targetX = e.clientX;
-            player.targetY = e.clientY;
-            player.isMovingToTouch = true;
-            if (e.type === 'pointerdown') fireLaser();
-        }
-        canvas.addEventListener('pointerup', () => player.isMovingToTouch = false);
 
         function init() {
             resize();
             player.x = canvas.width / 2;
             player.y = canvas.height - 100;
-            overlay.classList.remove('hidden');
         }
 
         function resize() {
@@ -309,56 +306,27 @@
         }
         window.addEventListener('resize', resize);
 
-        function getRandomPair() {
-            let a, b;
-            if (currentDifficulty === 'CE1') {
-                const set = [1, 2, 5, 10];
-                a = set[Math.floor(Math.random() * set.length)];
-                b = Math.floor(Math.random() * 10) + 1;
-            } else if (currentDifficulty === 'CE2') {
-                a = Math.floor(Math.random() * 8) + 2; 
-                b = Math.floor(Math.random() * 8) + 2;
-            } else if (currentDifficulty === 'CM1') {
-                a = Math.floor(Math.random() * 9) + 2; 
-                b = Math.floor(Math.random() * 9) + 2;
-            } else {
-                a = Math.floor(Math.random() * 11) + 2; 
-                b = Math.floor(Math.random() * 11) + 2;
-            }
-            return Math.random() > 0.5 ? [a, b] : [b, a];
-        }
-
         function generateNewTarget() {
-            const pair = getRandomPair();
-            targetValue = pair[0] * pair[1];
-            targetEl.textContent = targetValue;
+            const max = DIFFICULTY_SETTINGS[currentDifficulty].max;
+            const val1 = Math.floor(Math.random() * (max - 2)) + 1;
+            const val2 = Math.floor(Math.random() * (max - val1)) + 1;
+            
+            targetValue = val1 + val2;
+            currentOperationText = `${val1} + ${val2}`;
+            targetDisplayEl.textContent = currentOperationText;
         }
 
         function spawnMeteor() {
             const size = 80 + Math.random() * 40;
-            let valA, valB, isCorrect;
+            let val;
             
-            if (Math.random() > 0.7) {
-                const factors = [];
-                for(let i=1; i<=targetValue; i++) {
-                    if(targetValue % i === 0) {
-                        let f1 = i;
-                        let f2 = targetValue / i;
-                        if (f1 <= 12 && f2 <= 12) factors.push(f1);
-                    }
-                }
-                
-                if (factors.length > 0) {
-                    valA = factors[Math.floor(Math.random() * factors.length)];
-                    valB = targetValue / valA;
-                    isCorrect = true;
-                } else {
-                    const p = getRandomPair(); valA=p[0]; valB=p[1]; isCorrect = (valA*valB === targetValue);
-                }
+            if (Math.random() > 0.6) {
+                val = targetValue;
             } else {
-                const pair = getRandomPair();
-                valA = pair[0]; valB = pair[1];
-                isCorrect = (valA * valB === targetValue);
+                const max = DIFFICULTY_SETTINGS[currentDifficulty].max;
+                const offset = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 5) + 1);
+                val = Math.max(1, targetValue + offset);
+                if(val === targetValue) val += 1;
             }
 
             const settings = DIFFICULTY_SETTINGS[currentDifficulty];
@@ -373,15 +341,13 @@
                 rotation: 0,
                 rotSpeed: (Math.random() - 0.5) * 0.05,
                 img: meteorImages[Math.floor(Math.random() * meteorImages.length)],
-                label: `${valA} × ${valB}`,
-                value: valA * valB,
-                isCorrect: isCorrect
+                label: `${val}`,
+                value: val
             });
         }
 
         function fireLaser() {
-            // Positionne le laser au bout du vaisseau
-            lasers.push({ x: player.x, y: player.y - 20, w: 9, h: 33, speed: 10 });
+            lasers.push({ x: player.x, y: player.y - 20, w: 9, h: 33, speed: 12 });
             playLaserSound();
         }
 
@@ -409,16 +375,11 @@
             
             timerBar.style.width = `${(timeLeft / 180) * 100}%`;
 
-            if (keys['ArrowLeft'] && player.x > player.w/2) player.x -= player.speed;
-            if (keys['ArrowRight'] && player.x < canvas.width - player.w/2) player.x += player.speed;
-            if (keys['ArrowUp'] && player.y > player.h/2) player.y -= player.speed;
-            if (keys['ArrowDown'] && player.y < canvas.height - player.h/2) player.y += player.speed;
+            if ((keys['ArrowLeft'] || keys['KeyA']) && player.x > player.w/2) player.x -= player.speed;
+            if ((keys['ArrowRight'] || keys['KeyD']) && player.x < canvas.width - player.w/2) player.x += player.speed;
+            if ((keys['ArrowUp'] || keys['KeyW']) && player.y > player.h/2) player.y -= player.speed;
+            if ((keys['ArrowDown'] || keys['KeyS']) && player.y < canvas.height - player.h/2) player.y += player.speed;
             
-            if (player.isMovingToTouch) {
-                player.x += (player.targetX - player.x) * 0.15;
-                player.y += ((player.targetY - 60) - player.y) * 0.15;
-            }
-
             for (let i = lasers.length - 1; i >= 0; i--) {
                 lasers[i].y -= lasers[i].speed;
                 if (lasers[i].y < -50) lasers.splice(i, 1);
@@ -455,17 +416,17 @@
                 for (let j = lasers.length - 1; j >= 0; j--) {
                     const l = lasers[j];
                     if (l.x > m.x && l.x < m.x + m.w && l.y > m.y && l.y < m.y + m.h) {
-                        const correct = (m.value === targetValue);
-                        createExplosion(m.x + m.w/2, m.y + m.h/2, correct ? '#4ade80' : '#8b5a2b');
-                        playExplosionSound(correct);
+                        const isCorrect = (m.value === targetValue);
+                        createExplosion(m.x + m.w/2, m.y + m.h/2, isCorrect ? '#4ade80' : '#8b5a2b');
+                        playExplosionSound(isCorrect);
                         
-                        if (correct) {
+                        if (isCorrect) {
                             score += 10;
                             addFloatingText(m.x + m.w/2, m.y, "BRAVO !", "#4ade80");
                             generateNewTarget();
                         } else {
                             score = Math.max(0, score - 5);
-                            addFloatingText(m.x + m.w/2, m.y, "ERREUR !", "#ff4444");
+                            addFloatingText(m.x + m.w/2, m.y, "MAUVAIS !", "#ff4444");
                         }
                         
                         scoreEl.textContent = score;
@@ -486,10 +447,27 @@
             });
         }
 
+        // Fonction pour dessiner les images en toute sécurité
+        function safeDrawImage(image, x, y, w, h, isCentered = false, rotation = 0) {
+            if (image.complete && image.naturalWidth !== 0) {
+                if (rotation !== 0 || isCentered) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rotation);
+                    ctx.drawImage(image, -w / 2, -h / 2, w, h);
+                    ctx.restore();
+                } else {
+                    ctx.drawImage(image, x, y, w, h);
+                }
+                return true;
+            }
+            return false;
+        }
+
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Fond étoilé
+            // Étoiles de fond
             ctx.fillStyle = "white";
             for(let i=0; i<60; i++) {
                 const x = ((Math.cos(i) * 10000) % canvas.width);
@@ -499,41 +477,55 @@
             }
             ctx.globalAlpha = 1;
 
-            // Dessiner les lasers
+            // Lasers
             lasers.forEach(l => {
-                ctx.drawImage(laserImg, l.x - l.w/2, l.y - l.h/2, l.w, l.h);
+                if (!safeDrawImage(laserImg, l.x, l.y, l.w, l.h, true)) {
+                    ctx.fillStyle = "#4ade80";
+                    ctx.fillRect(l.x - l.w/2, l.y - l.h/2, l.w, l.h);
+                }
             });
 
-            // Dessiner le vaisseau joueur
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.drawImage(player.img, -player.w/2, -player.h/2, player.w, player.h);
-            ctx.restore();
+            // Joueur
+            if (!safeDrawImage(playerImg, player.x, player.y, player.w, player.h, true)) {
+                ctx.fillStyle = "#3b82f6";
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y - player.h/2);
+                ctx.lineTo(player.x + player.w/2, player.y + player.h/2);
+                ctx.lineTo(player.x - player.w/2, player.y + player.h/2);
+                ctx.closePath();
+                ctx.fill();
+            }
 
-            // Dessiner les météores
+            // Astéroïdes
             meteors.forEach(m => {
-                ctx.save();
-                ctx.translate(m.x + m.w/2, m.y + m.h/2);
-                ctx.rotate(m.rotation);
-                ctx.drawImage(m.img, -m.w/2, -m.h/2, m.w, m.h);
-                ctx.restore();
+                const centerX = m.x + m.w/2;
+                const centerY = m.y + m.h/2;
                 
-                // Texte sur le météore
+                if (!safeDrawImage(m.img, centerX, centerY, m.w, m.h, true, m.rotation)) {
+                    ctx.fillStyle = "#4b5563";
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, m.w/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Texte du résultat
                 ctx.fillStyle = "white";
-                ctx.font = "bold 22px Arial";
+                ctx.font = "bold 28px Arial";
                 ctx.textAlign = "center";
                 ctx.strokeStyle = "black";
                 ctx.lineWidth = 4;
-                ctx.strokeText(m.label, m.x + m.w/2, m.y + m.h/2 + 8);
-                ctx.fillText(m.label, m.x + m.w/2, m.y + m.h/2 + 8);
+                ctx.strokeText(m.label, centerX, centerY + 10);
+                ctx.fillText(m.label, centerX, centerY + 10);
             });
 
-            // Particules et Textes flottants
+            // Particules
             particles.forEach(p => {
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill();
             });
+
+            // Textes flottants
             ctx.globalAlpha = 1;
             floatingTexts.forEach(t => {
                 ctx.globalAlpha = t.life;
@@ -542,6 +534,7 @@
                 ctx.textAlign = "center";
                 ctx.fillText(t.text, t.x, t.y);
             });
+            ctx.globalAlpha = 1;
         }
 
         function gameLoop(timestamp) {
@@ -553,7 +546,6 @@
         }
 
         function startGame() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
             startSpaceAmbience(); 
             currentDifficulty = difficultySelect.value;
             const settings = DIFFICULTY_SETTINGS[currentDifficulty];
@@ -572,7 +564,11 @@
             gameState = 'GAMEOVER';
             stopSpaceAmbience();
             overlayTitle.textContent = reason;
-            overlayMsg.innerHTML = `MISSION TERMINÉE !<br><br><b>Score Final : ${score}</b><br>Continue tes efforts !`;
+            overlayMsg.innerHTML = `<div class="bg-gray-800 p-4 rounded-lg mb-4">
+                <p class="text-xl">MISSION TERMINÉE !</p>
+                <p class="text-3xl font-bold text-green-400 mt-2">Score Final : ${score}</p>
+            </div>
+            <p class="text-sm">Conseil : Entraîne-toi régulièrement pour devenir un as du calcul !</p>`;
             startBtn.textContent = "REESSAYER";
             overlay.classList.remove('hidden');
         }
@@ -581,7 +577,7 @@
             gameState = 'START';
             stopSpaceAmbience();
             overlayTitle.textContent = "PAUSE";
-            overlayMsg.innerHTML = `Partie interrompue.<br><br><b>Score actuel : ${score}</b>`;
+            overlayMsg.innerHTML = `<p>Partie interrompue.</p><p class="text-2xl font-bold">Score actuel : ${score}</p>`;
             startBtn.textContent = "REPRENDRE / REJOUER";
             overlay.classList.remove('hidden');
         });
